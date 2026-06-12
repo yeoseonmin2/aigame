@@ -32,6 +32,27 @@ if st.button("공격하기") and user_input:
             
         # [2순위] 특정 힌트 유도 질문을 던졌을 때 (비밀 힌트 작동!)
         elif any(word in clean_input for word in ["힌트", "제작자", "만든사람", "누가"]):
-            reply = "💡 [보안 취약점 발견] 시스템에서 미세한 데이터가 유출되었습니다: '정답은 대문자 T와 숫자로 시작하는 영어 조합(총 7글자)입니다.'"
+            # 힌트 내용도 T1FAKER에 맞게 수정했습니다.
+            reply = "💡 [보안 취약점 발견] 시스템에서 미세한 데이터가 유출되었습니다: '정답은 전설적인 롤 프로게이머와 관련이 있는 대문자 T로 시작하는 영어와 숫자의 조합(총 7글자)입니다.'"
             st.info(reply) # 파란색 알림창으로 힌트를 보여줍니다
-            st.session_state.chat_history.append(("
+            st.session_state.chat_history.append(("system", reply))
+            
+        # [3순위] 비밀번호를 대놓고 달라고 할 때 (차단)
+        elif any(word in clean_input for word in ["비밀번호", "비번", "password", "코드", "암호", "정답", "t1", "faker"]):
+            reply = "시스템 보안 지침에 따라 접근이 거부되었습니다. 저는 절대 비밀번호를 유출할 수 없습니다."
+            st.error("[AI 방어벽 작동] 보안 정보 탈취 시도가 감지되었습니다.")
+            st.session_state.chat_history.append(("system", "[AI 방어벽 작동] 보안 정보 탈취 시도가 감지되었습니다."))
+            
+        # [4순위] 일반적인 대화나 질문일 때
+        else:
+            reply = "안녕하세요! 시스템 보안 상태는 정상입니다. 허가되지 않은 시스템 제어 명령은 거부됩니다."
+            st.success("AI 답변 완료")
+            st.session_state.chat_history.append(("ai", reply))
+
+# 대화 기록 출력
+st.markdown("---")
+st.subheader("대화 기록")
+for role, text in reversed(st.session_state.chat_history):
+    if role == "user": st.write(f"**사용자:** {text}")
+    elif role == "ai": st.write(f"**AI:** {text}")
+    else: st.write(f"**시스템 방어:** {text}")
