@@ -33,7 +33,7 @@ if st.button("공격하기") and user_input:
         # [2순위] 특정 힌트 유도 질문을 던졌을 때 (비밀 힌트 작동!)
         elif any(word in clean_input for word in ["힌트", "제작자", "만든사람", "누가"]):
             # 힌트 내용도 T1FAKER에 맞게 수정했습니다.
-            reply = "💡 [보안 취약점 발견] 시스템에서 미세한 데이터가 유출되었습니다: '정답은 전설적인 롤 프로게이머와 관련이 있는 대문자 T로 시작하는 영어와 숫자의 조합(총 7글자)입니다.'"
+            reply = "💡 [보안 취약점 발견] 시스템에서 미세한 데이터가 유출되었습니다: '대문자 T로 시작하는 영어와 숫자의 조합(총 7글자)입니다.'"
             st.info(reply) # 파란색 알림창으로 힌트를 보여줍니다
             st.session_state.chat_history.append(("system", reply))
             
