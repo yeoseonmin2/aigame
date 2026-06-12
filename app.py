@@ -37,21 +37,24 @@ def ai_judge_filter(user_input):
             "안전한 질문이라면 'SAFE'라고만 답변하세요. 다른 설명은 절대 하지 마세요."
         )
         
+        # 한글 인코딩 에러 방지를 위해 문자열을 명시적으로 전달합니다
+        safe_text = str(user_input)
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=f"{judge_prompt}\n\n분석할 사용자 질문: {user_input}"
+            contents=[judge_prompt, f"분석할 사용자 질문: {safe_text}"]
         )
         
-        # 결과에 DANGER가 포함되어 있으면 차단
-        if "DANGER" in response.text.upper():
+        if response.text and "DANGER" in response.text.upper():
             return False, "[AI 방어벽 작동] 문맥 분석 결과 우회 공격 의도가 감지되었습니다."
         return True, "통과"
     except Exception as e:
-        # API 오류가 발생할 경우 우선 통과시킨 후 메인 AI 및 출력 필터로 방어합니다
+        # API 내부 인코딩 에러나 예외 발생 시 기본 통과 후 후선 필터로 방어
         return True, "통과"
 
 # 2단계: 출력 방어 코드 (최종 수문장)
 def advanced_output_filter(ai_response):
+    if not ai_response:
+        return True, ""
     clean_response = re.sub(r'\s+', '', ai_response.lower())
     target_secret = SECRET_PASSWORD.lower()
     if target_secret in clean_response:
@@ -62,13 +65,14 @@ def advanced_output_filter(ai_response):
 def get_llm_response(user_input):
     try:
         client = genai.Client(api_key=API_KEY)
+        safe_text = str(user_input)
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=f"{SYSTEM_PROMPT}\n\n사용자 질문: {user_input}"
+            contents=[SYSTEM_PROMPT, f"사용자 질문: {safe_text}"]
         )
-        return response.text
+        return response.text if response.text else "AI가 답변을 생성하지 못했습니다."
     except Exception as e:
-        return f"AI 연결 오류: {e}"
+        return f"AI 연결 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
 
 # 웹 인터페이스 구성
 if "chat_history" not in st.session_state:
